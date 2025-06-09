@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Password Strength Checker 🔐</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .strength-bar {
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s, width 0.3s;
+        }
+        .bar-very-weak { width: 20%; background-color: red; }
+        .bar-weak { width: 40%; background-color: orangered; }
+        .bar-medium { width: 60%; background-color: orange; }
+        .bar-strong { width: 80%; background-color: yellowgreen; }
+        .bar-very-strong { width: 100%; background-color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Password Strength Checker 🔐</h1>
+        <form id="passwordForm">
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+            <button type="submit">Check Strength</button>
+        </form>
+
+        <div id="result"></div>
+        <div id="strengthBar" class="strength-bar"></div>
+        <ul id="feedback"></ul>
+    </div>
+
+    <script>
+        const form = document.getElementById('passwordForm');
+        const result = document.getElementById('result');
+        const feedbackList = document.getElementById('feedback');
+        const strengthBar = document.getElementById('strengthBar');
+
+        const strengthClass = {
+            "Very Weak": "bar-very-weak",
+            "Weak": "bar-weak",
+            "Medium": "bar-medium",
+            "Strong": "bar-strong",
+            "Very Strong": "bar-very-strong"
+        };
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+
+            const response = await fetch('/check', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `password=${encodeURIComponent(password)}`
+            });
+
+            const data = await response.json();
+            result.textContent = `Password Strength: ${data.strength}`;
+
+            feedbackList.innerHTML = '';
+            data.feedback.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                feedbackList.appendChild(li);
+            });
+
+            strengthBar.className = 'strength-bar';
+            if (strengthClass[data.strength]) {
+                strengthBar.classList.add(strengthClass[data.strength]);
+            }
+        });
+    </script>
+</body>
+</html>
